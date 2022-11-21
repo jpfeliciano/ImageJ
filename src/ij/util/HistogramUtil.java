@@ -11,6 +11,7 @@ import ij.process.ImageStatistics;
 
 public class HistogramUtil implements Measurements {
 
+    
     private HistogramUtil() {
     }
 
