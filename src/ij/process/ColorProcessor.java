@@ -675,6 +675,7 @@ public class ColorProcessor extends ImageProcessor {
 	}
 
 	/** Fills the current rectangular ROI. */
+	@Override
 	public void fill() {
 		for (int y=roiY; y<(roiY+roiHeight); y++) {
 			int i = y * width + roiX;
