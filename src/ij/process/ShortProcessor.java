@@ -3,9 +3,8 @@
 import java.util.*;
 import java.awt.*;
 import java.awt.image.*;
-import ij.gui.*;
 
-/** ShortProcessors contain a 16-bit unsigned image
+ /** ShortProcessors contain a 16-bit unsigned image
 	and methods that operate on that image. */
 public class ShortProcessor extends ImageProcessor {
 
@@ -438,13 +437,7 @@ public class ShortProcessor extends ImageProcessor {
 		raster = null;
 	}
 
-	void getRow2(int x, int y, int[] data, int length) {
-		int value;
-		for (int i=0; i<length; i++)
-			data[i] = pixels[y*width+x+i]&0xffff;
-	}
-	
-	void putColumn2(int x, int y, int[] data, int length) {
+	 void putColumn2(int x, int y, int[] data, int length) {
 		int value;
 		for (int i=0; i<length; i++)
 			pixels[(y+i)*width+x] = (short)data[i];
@@ -480,7 +473,8 @@ public class ShortProcessor extends ImageProcessor {
 		findMinAndMax();
 	}
 
-	private void process(int op, double value) {
+	@Override
+	public void process(Operation op, double value) {
 		int v1, v2;
 		double range = getMax()-getMin();
 		//boolean resetMinMax = roiWidth==width && roiHeight==height && !(op==FILL);
@@ -569,37 +563,18 @@ public class ShortProcessor extends ImageProcessor {
 			}
 		}
     }
-    
-	public void invert() {
-		int range = 65536;
-		int defaultRange = ij.ImagePlus.getDefault16bitRange();
-		if (defaultRange>0 && !isSigned16Bit())
-			range = (int)Math.pow(2,defaultRange);
-		setMinAndMax(0, range-1);
-		process(INVERT, 0.0);
-		resetMinAndMax();
-	}
 
-	public void add(int value) {process(ADD, value);}
-	public void add(double value) {process(ADD, value);}
-	public void set(double value) {process(SET, value);}
-	public void multiply(double value) {process(MULT, value);}
-	public void and(int value) {process(AND, value);}
-	public void or(int value) {process(OR, value);}
-	public void xor(int value) {process(XOR, value);}
-	public void gamma(double value) {process(GAMMA, value);}
-	public void log() {process(LOG, 0.0);}
-	public void exp() {process(EXP, 0.0);}
-	public void sqr() {process(SQR, 0.0);}
-	public void sqrt() {process(SQRT, 0.0);}
-	public void abs() {process(ABS, 0.0);}
-	public void min(double value) {process(MINIMUM, value);}
-	public void max(double value) {process(MAXIMUM, value);}
-
-	/** Fills the current rectangular ROI. */
-	public void fill() {
-		process(FILL, 0.0);
-	}
+	 @Override
+	 public void invert() {
+		 int range = 65536;
+		 int defaultRange = ij.ImagePlus.getDefault16bitRange();
+		 if (defaultRange > 0 && !isSigned16Bit()) {
+			 range = (int) Math.pow(2, defaultRange);
+		 }
+		 setMinAndMax(0, range - 1);
+		 process(Operation.INVERT, 0.0);
+		 resetMinAndMax();
+	 }
 
 	/** Fills pixels that are within roi and part of the mask.
 		Does nothing if the mask is not the same as the ROI. */
