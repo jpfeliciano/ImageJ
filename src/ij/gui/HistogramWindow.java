@@ -6,6 +6,9 @@ import java.awt.event.*;
 import java.io.*;
 import java.awt.datatransfer.*;
 import java.util.ArrayList;
+
+import javax.lang.model.util.ElementScanner14;
+
 import ij.*;
 import ij.process.*;
 import ij.measure.*;
@@ -137,21 +140,6 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	public void showHistogram(ImagePlus imp, int bins, double histMin, double histMax) {
 		stats = HistogramUtil.getStats(rgbMode, imp, imp.getProcessor(), bins, histMin, histMax);
 		showHistogram(imp, stats);
-	}
-
-	private ImageStatistics RGBHistogram(ImagePlus imp, int bins, double histMin, double histMax) {
-		ImageProcessor ip = (ColorProcessor) imp.getProcessor();
-		ip = ip.crop();
-		int w = ip.getWidth();
-		int h = ip.getHeight();
-		ImageProcessor ip2 = new ByteProcessor(w * 3, h);
-		ByteProcessor temp = null;
-		for (int i = 0; i < 3; i++) {
-			temp = ((ColorProcessor) ip).getChannel(i + 1, temp);
-			ip2.insert(temp, i * w, 0);
-		}
-		ImagePlus imp2 = new ImagePlus("imp2", ip2);
-		return imp2.getStatistics(AREA + MEAN + MODE + MIN_MAX, bins, histMin, histMax);
 	}
 
 	/** Draws the histogram using the specified title and ImageStatistics. */
@@ -350,43 +338,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			maxCount = 1;
 		frame = new Rectangle(XMARGIN, YMARGIN, HIST_WIDTH, HIST_HEIGHT);
 		ip.drawRect(frame.x - 1, frame.y, frame.width + 2, frame.height + 1);
-		if (histogram.length == 256) {
-			double scale2 = HIST_WIDTH / 256.0;
-			int barWidth = 1;
-			if (SCALE > 1)
-				barWidth = 2;
-			if (SCALE > 2)
-				barWidth = 3;
-			for (int i = 0; i < 256; i++) {
-				int x = (int) (i * scale2);
-				int y = (int) (((double) HIST_HEIGHT * (double) histogram[i]) / maxCount);
-				if (y > HIST_HEIGHT)
-					y = HIST_HEIGHT;
-				for (int j = 0; j < barWidth; j++)
-					ip.drawLine(x + j + XMARGIN, YMARGIN + HIST_HEIGHT, x + j + XMARGIN, YMARGIN + HIST_HEIGHT - y);
-			}
-		} else if (histogram.length <= HIST_WIDTH) {
-			int index, y;
-			for (int i = 0; i < HIST_WIDTH; i++) {
-				index = (int) (i * (double) histogram.length / HIST_WIDTH);
-				y = (int) (((double) HIST_HEIGHT * (double) histogram[index]) / maxCount);
-				if (y > HIST_HEIGHT)
-					y = HIST_HEIGHT;
-				ip.drawLine(i + XMARGIN, YMARGIN + HIST_HEIGHT, i + XMARGIN, YMARGIN + HIST_HEIGHT - y);
-			}
-		} else {
-			double xscale = (double) HIST_WIDTH / histogram.length;
-			for (int i = 0; i < histogram.length; i++) {
-				long value = histogram[i];
-				if (value > 0L) {
-					int y = (int) (((double) HIST_HEIGHT * (double) value) / maxCount);
-					if (y > HIST_HEIGHT)
-						y = HIST_HEIGHT;
-					int x = (int) (i * xscale) + XMARGIN;
-					ip.drawLine(x, YMARGIN + HIST_HEIGHT, x, YMARGIN + HIST_HEIGHT - y);
-				}
-			}
-		}
+		drawCommonPlot(maxCount, ip, false);
 	}
 
 	void drawLogPlot(long maxCount, ImageProcessor ip) {
@@ -394,6 +346,11 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 		ip.drawRect(frame.x - 1, frame.y, frame.width + 2, frame.height + 1);
 		double max = Math.log(maxCount);
 		ip.setColor(Color.gray);
+		drawCommonPlot(maxCount, ip, true);
+		ip.setColor(Color.black);
+	}
+
+	private void drawCommonPlot(long max, ImageProcessor ip, boolean log) {
 		if (histogram.length == 256) {
 			double scale2 = HIST_WIDTH / 256.0;
 			int barWidth = 1;
@@ -403,7 +360,11 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 				barWidth = 3;
 			for (int i = 0; i < 256; i++) {
 				int x = (int) (i * scale2);
-				int y = histogram[i] == 0 ? 0 : (int) (HIST_HEIGHT * Math.log(histogram[i]) / max);
+				int y;
+				if (log)
+					y = histogram[i] == 0 ? 0 : (int) (HIST_HEIGHT * Math.log(histogram[i]) / max);
+				else
+					y = (int) (((double) HIST_HEIGHT * (double) histogram[i]) / max);
 				if (y > HIST_HEIGHT)
 					y = HIST_HEIGHT;
 				for (int j = 0; j < barWidth; j++)
@@ -413,7 +374,10 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			int index, y;
 			for (int i = 0; i < HIST_WIDTH; i++) {
 				index = (int) (i * (double) histogram.length / HIST_WIDTH);
-				y = histogram[index] == 0 ? 0 : (int) (HIST_HEIGHT * Math.log(histogram[index]) / max);
+				if (log)
+					y = histogram[index] == 0 ? 0 : (int) (HIST_HEIGHT * Math.log(histogram[index]) / max);
+				else
+					y = (int) (((double) HIST_HEIGHT * (double) histogram[index]) / max);
 				if (y > HIST_HEIGHT)
 					y = HIST_HEIGHT;
 				ip.drawLine(i + XMARGIN, YMARGIN + HIST_HEIGHT, i + XMARGIN, YMARGIN + HIST_HEIGHT - y);
@@ -431,7 +395,6 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 				}
 			}
 		}
-		ip.setColor(Color.black);
 	}
 
 	void drawText(ImageProcessor ip, int x, int y, boolean fixedRange) {
