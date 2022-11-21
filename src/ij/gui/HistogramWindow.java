@@ -5,15 +5,10 @@ import java.awt.image.*;
 import java.awt.event.*;
 import java.io.*;
 import java.awt.datatransfer.*;
-import java.util.ArrayList;
-
-import javax.lang.model.util.ElementScanner14;
-
 import ij.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.plugin.filter.Analyzer;
-import ij.text.TextWindow;
 import ij.util.HistogramUtil;
 
 /** This class is an extended ImageWindow that displays histograms. */
