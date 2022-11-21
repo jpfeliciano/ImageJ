@@ -1,9 +1,15 @@
 package ij.process;
 
-import java.util.*;
-import java.awt.*;
-import java.awt.image.*;
-import ij.gui.*;
+import java.awt.Color;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.IndexColorModel;
+import java.awt.image.Raster;
+import java.awt.image.SampleModel;
+import java.util.Random;
 
 /** This is an 32-bit floating-point image and methods that operate on that image. */
 public class FloatProcessor extends ImageProcessor {
@@ -443,12 +449,13 @@ public class FloatProcessor extends ImageProcessor {
 
 	public void applyTable(int[] lut) {}
 
-	private void process(int op, double value) {
+	@Override
+	public void process(Operation op, double value) {
 		float c, v1, v2;
 		//boolean resetMinMax = roiWidth==width && roiHeight==height && !(op==FILL);
 		c = (float)value;
 		float min2=0f, max2=0f;
-		if (op==INVERT)
+		if (op.equals(Operation.INVERT))
 			{min2=(float)getMin(); max2=(float)getMax();}
 		for (int y=roiY; y<(roiY+roiHeight); y++) {
 			int i = y * width + roiX;
@@ -514,31 +521,17 @@ public class FloatProcessor extends ImageProcessor {
 		}
 	}
 
-	/** Each pixel in the image is inverted using p=max-(p-min), where 'min'
-		and 'max' are the display range limits set using setMinAndMax(). */
-	public void invert() {
-		process(INVERT, 0.0);
+	@Override
+	public void and(int value) {
 	}
-	
-	public void add(int value) {process(ADD, value);}
-	public void add(double value) {process(ADD, value);}
-	public void set(double value) {process(SET, value);}
-	public void multiply(double value) {process(MULT, value);}
-	public void and(int value) {}
-	public void or(int value) {}
-	public void xor(int value) {}
-	public void gamma(double value) {process(GAMMA, value);}
-	public void log() {process(LOG, 0.0);}
-	public void exp() {process(EXP, 0.0);}
-	public void sqr() {process(SQR, 0.0);}
-	public void sqrt() {process(SQRT, 0.0);}
-	public void abs() {process(ABS, 0.0);}
-	public void min(double value) {process(MINIMUM, value);}
-	public void max(double value) {process(MAXIMUM, value);}
 
+	@Override
+	public void or(int value) {
+	}
 
-	/** Fills the current rectangular ROI. */
-	public void fill() {process(FILL, 0.0);}
+	@Override
+	public void xor(int value) {
+	}
 
 	/** Fills pixels that are within roi and part of the mask.
 		Does nothing if the mask is not the same as the the ROI. */

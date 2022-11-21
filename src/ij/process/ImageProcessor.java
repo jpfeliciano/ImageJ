@@ -53,8 +53,6 @@ public abstract class ImageProcessor implements Cloneable {
 	public static final int NEAREST_NEIGHBOR=0, NONE=0, BILINEAR=1, BICUBIC=2;
 	public static final int BLUR_MORE=0, FIND_EDGES=1, MEDIAN_FILTER=2, MIN=3, MAX=4, CONVOLVE=5;
 	static public final int RED_LUT=0, BLACK_AND_WHITE_LUT=1, NO_LUT_UPDATE=2, OVER_UNDER_LUT=3;
-	static final int INVERT=0, FILL=1, ADD=2, MULT=3, AND=4, OR=5,
-		XOR=6, GAMMA=7, LOG=8, MINIMUM=9, MAXIMUM=10, SQR=11, SQRT=12, EXP=13, ABS=14, SET=15;
 	static final String WRONG_LENGTH = "width*height!=pixels.length";
 
 	int fgColor = 0;
@@ -988,7 +986,7 @@ public abstract class ImageProcessor implements Cloneable {
 		return false;
 	}
 
-	private void process(int op, double value) {
+	protected void process(Operation op, double value) {
 		double SCALE = 255.0/Math.log(255.0);
 		int v;
 
@@ -1658,7 +1656,7 @@ public abstract class ImageProcessor implements Cloneable {
 	*	@see #fill(Roi)
 	*/
 	public void fill() {
-		process(FILL, 0.0);
+		process(Operation.FILL, 0.0);
 	}
 
 	/** Fills pixels that are within the ROI bounding rectangle and part of
@@ -2111,62 +2109,132 @@ public abstract class ImageProcessor implements Cloneable {
 		supported. */
 	public abstract void applyTable(int[] lut);
 
-	/** Inverts the image or ROI. */
-	public void invert() {process(INVERT, 0.0);}
+	/**
+	 * Inverts the image or ROI.
+	 */
+	public void invert() {
+		process(Operation.INVERT, 0.0);
+	}
 
-	/** Adds 'value' to each pixel in the image or ROI. */
-	public void add(int value) {process(ADD, value);}
+	/**
+	 * Adds 'value' to each pixel in the image or ROI.
+	 */
+	public void add(int value) {
+		process(Operation.ADD, value);
+	}
 
-	/** Adds 'value' to each pixel in the image or ROI. */
-	public void add(double value) {process(ADD, value);}
+	/**
+	 * Adds 'value' to each pixel in the image or ROI.
+	 */
+	public void add(double value) {
+		process(Operation.ADD, value);
+	}
 
-	/** Subtracts 'value' from each pixel in the image or ROI. */
+	/**
+	 * Subtracts 'value' from each pixel in the image or ROI.
+	 */
 	public void subtract(double value) {
 		add(-value);
 	}
 
-	/** Multiplies each pixel in the image or ROI by 'value'. */
-	public void multiply(double value) {process(MULT, value);}
+	/**
+	 * Multiplies each pixel in the image or ROI by 'value'.
+	 */
+	public void multiply(double value) {
+		process(Operation.MULT, value);
+	}
 
-	/** Assigns 'value' to each pixel in the image or ROI. */
-	public void set(double value) {process(SET, value);}
+	/**
+	 * Assigns 'value' to each pixel in the image or ROI.
+	 */
+	public void set(double value) {
+		process(Operation.SET, value);
+	}
 
-	/** Binary AND of each pixel in the image or ROI with 'value'. */
-	public void and(int value) {process(AND, value);}
+	/**
+	 * Binary AND of each pixel in the image or ROI with 'value'.
+	 */
+	public void and(int value) {
+		process(Operation.AND, value);
+	}
 
-	/** Binary OR of each pixel in the image or ROI with 'value'. */
-	public void or(int value) {process(OR, value);}
+	/**
+	 * Binary OR of each pixel in the image or ROI with 'value'.
+	 */
+	public void or(int value) {
+		process(Operation.OR, value);
+	}
 
-	/** Binary exclusive OR of each pixel in the image or ROI with 'value'. */
-	public void xor(int value) {process(XOR, value);}
+	/**
+	 * Binary exclusive OR of each pixel in the image or ROI with 'value'.
+	 */
+	public void xor(int value) {
+		process(Operation.XOR, value);
+	}
 
-	/** Performs gamma correction of the image or ROI. */
-	public void gamma(double value) {process(GAMMA, value);}
+	/**
+	 * Performs gamma correction of the image or ROI.
+	 */
+	public void gamma(double value) {
+		process(Operation.GAMMA, value);
+	}
 
-	/** Does a natural logarithmic (base e) transform of the image or ROI. */
-	public void log() {process(LOG, 0.0);}
+	/**
+	 * Does a natural logarithmic (base e) transform of the image or ROI.
+	 */
+	public void log() {
+		process(Operation.LOG, 0.0);
+	}
 
-	/** Does a natural logarithmic (base e) transform of the image or ROI. */
-	public void ln() {log();}
+	/**
+	 * Does a natural logarithmic (base e) transform of the image or ROI.
+	 */
+	public void ln() {
+		log();
+	}
 
-	/** Performs a exponential transform on the image or ROI. */
-	public void exp() {process(EXP, 0.0);}
+	/**
+	 * Performs a exponential transform on the image or ROI.
+	 */
+	public void exp() {
+		process(Operation.EXP, 0.0);
+	}
 
-	/** Performs a square transform on the image or ROI. */
-	public void sqr() {process(SQR, 0.0);}
+	/**
+	 * Performs a square transform on the image or ROI.
+	 */
+	public void sqr() {
+		process(Operation.SQR, 0.0);
+	}
 
-	/** Performs a square root transform on the image or ROI. */
-	public void sqrt() {process(SQRT, 0.0);}
+	/**
+	 * Performs a square root transform on the image or ROI.
+	 */
+	public void sqrt() {
+		process(Operation.SQRT, 0.0);
+	}
 
-	/** If this is a 32-bit or signed 16-bit image, performs an
-		absolute value transform, otherwise does nothing. */
-	public void abs() {}
+	/**
+	 * If this is a 32-bit or signed 16-bit image, performs an absolute value transform, otherwise
+	 * does nothing.
+	 */
+	public void abs() {
+		process(Operation.ABS, 0.0);
+	}
 
-	/** Pixels less than 'value' are set to 'value'. */
-	public void min(double value) {process(MINIMUM, value);}
+	/**
+	 * Pixels less than 'value' are set to 'value'.
+	 */
+	public void min(double value) {
+		process(Operation.MINIMUM, value);
+	}
 
-	/** Pixels greater than 'value' are set to 'value'. */
-	public void max(double value) {process(MAXIMUM, value);}
+	/**
+	 * Pixels greater than 'value' are set to 'value'.
+	 */
+	public void max(double value) {
+		process(Operation.MAXIMUM, value);
+	}
 
 	/** Returns a copy of this image is the form of an AWT Image. */
 	public abstract Image createImage();
